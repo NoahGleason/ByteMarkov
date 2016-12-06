@@ -30,4 +30,7 @@ public class BytePlus {
             return "e"+Byte.toString(base);
         return Byte.toString(base);
     }
+    
+    public boolean equals(Object obj){
+        return (obj != null) && (obj.getClass() == this.getClass()) && (obj.getBase == base) && (obj.getExtra == extra);
 }

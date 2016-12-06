@@ -10,18 +10,18 @@ import java.util.*;
 /**
  * Program created by Noah Gleason on 11/20/16.
  */
-public class Markov { 
+public class Markov {
     
     private static final BytePlus NON_BYTE = new BytePlus((byte) 1, true);
     private static final BytePlus END_BYTE = new BytePlus((byte) -1, true);
-    private static String FILENAME = "Judy 1.5 minute.raw";
+    private static final String FILENAME = "Judy 1.5 minute.raw";
 
-    public static void main(String[] args) throws IOException { 
+    public static void main(String[] args) throws IOException {
         final int n = 100;
         byte[] babbledAudio = babbleNMinLengthByte(FILENAME, n, 10000);
         Files.write(Paths.get("out.raw"), babbledAudio);
     }
-  
+
     public static byte[] babbleNMinLengthByte(String filename, int n, int minLength) throws IOException {
         Map<BytePlus[], List<BytePlus>> dict = buildNgramByteSuffixDictionary(filename, n);
         Random gen = new Random();
@@ -33,7 +33,7 @@ public class Markov { 
             lastBytes[i] = NON_BYTE;
         }
         while (count < minLength || lastBytes[-1] != END_BYTE){
-            nextByte = dict.get(lastBytes).get(gen.nextInt(dict.get(lastBytes).size())); 
+            nextByte = dict.get(lastBytes).get(gen.nextInt(dict.get(lastBytes).size()));
             if (!nextByte.getExtra())
                 result.add(nextByte);
             for (int i = 1; i < lastBytes.length; i++){
@@ -48,7 +48,7 @@ public class Markov { 
         System.out.println("Babbled!");
         return toReturn;
     }
-    
+
     public static Map<BytePlus[], List<BytePlus>> buildNgramByteSuffixDictionary(String filename, int n) throws IOException{
         byte[] data = Files.readAllBytes(Paths.get(filename));
         List<BytePlus> bytes = new ArrayList<>();
@@ -63,20 +63,17 @@ public class Markov { 
         Map<BytePlus[], List<BytePlus>> toReturn = new HashMap<>();
         for (long i = n; i < bytes.size(); i++){
             BytePlus[] key = new BytePlus[n];
-            for (long j = n; j > 0; j--){
+            for (long j = n; j > 0; j--)
                 key[(int)(n-j)] = (bytes.get((int) (i-j)));
-                //System.out.println("Byte "+(n-j)+" of "+n+" added to the dictionary for byte "+i+".");
-            }
+
             appendToKey(toReturn, key, bytes.get((int) i));
             if (i%1000000 == 0 || (i > 5000000 && i%1000 == 0))
                 System.out.println("Byte "+i+" added to dictionary!");
-            if ((((double) (toReturn.size())/(double)(bytes.size()))*100.0)%1 == 0)
-                System.out.println(((double) (toReturn.size())/(double)(bytes.size()))*100+"% complete at byte "+i+".");
         }
         System.out.println("Byte dictionary built!");
         return toReturn;
     }
-  
+
     public static <K, V>  void appendToKey(Map<K, List<V>> m, K key, V value){
         List<V> modifiedValue;
         if (m.containsKey(key)) {
@@ -88,5 +85,5 @@ public class Markov { 
             modifiedValue.add(value);
             m.put(key, modifiedValue);
         }
-    } 
+    }
 }

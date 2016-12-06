@@ -32,6 +32,9 @@ public class BytePlus {
     }
     
     public boolean equals(Object obj){
-        return (obj != null) && (obj.getClass() == this.getClass()) && (obj.getBase == base) && (obj.getExtra == extra);
+        if (obj == null || obj.getClass() != this.getClass())
+            return false;
+        BytePlus other = (BytePlus) obj;
+        return (other.getBase() == base) && (other.getExtra() == extra);
     }
 }

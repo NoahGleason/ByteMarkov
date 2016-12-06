@@ -1,5 +1,7 @@
 package net.mrpaul.XA110.ps19;
 
+import java.util.Objects;
+
 /**
  * Program created by noah on 12/5/16.
  */
@@ -25,16 +27,25 @@ public class BytePlus {
         return extra;
     }
 
+    @Override
     public String toString(){
         if (extra)
             return "e"+Byte.toString(base);
         return Byte.toString(base);
     }
-    
+
+    @Override
     public boolean equals(Object obj){
-        if (obj == null || obj.getClass() != this.getClass())
+        if (obj == null || obj.getClass() != this.getClass()) {
+            System.out.println("obj was not a BytePlus!");
             return false;
+        }
         BytePlus other = (BytePlus) obj;
         return (other.getBase() == base) && (other.getExtra() == extra);
+    }
+
+    @Override
+    public int hashCode(){
+        return Objects.hash(base, extra);
     }
 }

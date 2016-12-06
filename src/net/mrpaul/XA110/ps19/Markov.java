@@ -17,29 +17,28 @@ public class Markov {
     private static final String FILENAME = "Judy 1.5 minute.raw";
 
     public static void main(String[] args) throws IOException {
-        final int n = 100;
+        final int n = 50;
         byte[] babbledAudio = babbleNMinLengthByte(FILENAME, n, 10000);
         Files.write(Paths.get("out.raw"), babbledAudio);
     }
 
     public static byte[] babbleNMinLengthByte(String filename, int n, int minLength) throws IOException {
-        Map<BytePlus[], List<BytePlus>> dict = buildNgramByteSuffixDictionary(filename, n);
+        Map<List<BytePlus>, List<BytePlus>> dict = buildNgramByteSuffixDictionary(filename, n);
         Random gen = new Random();
         int count = 0;
         BytePlus nextByte;
         List<BytePlus> result = new ArrayList<>();
-        BytePlus[] lastBytes = new BytePlus[n];
+        List<BytePlus> lastBytes = new ArrayList<>(n);
         for (int i = 0; i < n; i++){
-            lastBytes[i] = NON_BYTE;
+            lastBytes.add(NON_BYTE);
         }
-        while (count < minLength || lastBytes[-1] != END_BYTE){
-            nextByte = dict.get(lastBytes).get(gen.nextInt(dict.get(lastBytes).size()));
+        while (count < minLength || lastBytes.get(lastBytes.size()-1) != END_BYTE){
+            List<BytePlus> possibleNext = dict.get(lastBytes);
+            nextByte = possibleNext.get(gen.nextInt(possibleNext.size()));
             if (!nextByte.getExtra())
                 result.add(nextByte);
-            for (int i = 1; i < lastBytes.length; i++){
-                lastBytes[i-1] = lastBytes[i];
-            }
-            lastBytes[-1] = nextByte;
+            lastBytes.remove(0);
+            lastBytes.add(nextByte);
             count++;
         }
         byte[] toReturn = new byte[result.size()];
@@ -49,7 +48,7 @@ public class Markov {
         return toReturn;
     }
 
-    public static Map<BytePlus[], List<BytePlus>> buildNgramByteSuffixDictionary(String filename, int n) throws IOException{
+    public static Map<List<BytePlus>, List<BytePlus>> buildNgramByteSuffixDictionary(String filename, int n) throws IOException{
         byte[] data = Files.readAllBytes(Paths.get(filename));
         List<BytePlus> bytes = new ArrayList<>();
         for (byte b: data)
@@ -60,11 +59,11 @@ public class Markov {
             bytes.add(0, NON_BYTE);
             bytes.add(NON_BYTE);
         }
-        Map<BytePlus[], List<BytePlus>> toReturn = new HashMap<>();
+        Map<List<BytePlus>, List<BytePlus>> toReturn = new HashMap<>();
         for (long i = n; i < bytes.size(); i++){
-            BytePlus[] key = new BytePlus[n];
+            List<BytePlus> key = new ArrayList<>(n);
             for (long j = n; j > 0; j--)
-                key[(int)(n-j)] = (bytes.get((int) (i-j)));
+                key.add(bytes.get((int) (i-j)));
 
             appendToKey(toReturn, key, bytes.get((int) i));
             if (i%1000000 == 0 || (i > 5000000 && i%1000 == 0))

@@ -8,8 +8,8 @@ public class BytePlus {
     private boolean extra;
     private byte base;
 
-    public BytePlus(byte b){
-        this(b, false);
+    public BytePlus(byte base){
+        this(base, false);
     }
 
     public BytePlus(byte base, boolean extra){
@@ -33,4 +33,5 @@ public class BytePlus {
     
     public boolean equals(Object obj){
         return (obj != null) && (obj.getClass() == this.getClass()) && (obj.getBase == base) && (obj.getExtra == extra);
+    }
 }

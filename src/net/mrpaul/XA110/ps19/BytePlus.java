@@ -6,8 +6,9 @@ import java.util.Objects;
  * Program created by noah on 12/5/16.
  */
 public class BytePlus {
-
+    //An extra bit used to denote special characters.
     private boolean extra;
+    //The byte value.
     private byte base;
 
     public BytePlus(byte base){

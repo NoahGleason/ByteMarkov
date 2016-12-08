@@ -24,6 +24,14 @@ public class Markov {
         Files.write(Paths.get("out.raw"), babbledAudio);
     }
 
+    /**
+     * Uses a markov chain to make a "babble" based off of a source file.
+     * @param filename The path to the file that will be used as the source.
+     * @param n The length of the markov chain.
+     * @param minLength The minimum length of the output file, in bytes.
+     * @return An array of bytes that has been babbled, ready to be written to a file.
+     * @throws IOException if filename cannot be found.
+     */
     public static byte[] babbleNMinLengthByte(String filename, int n, int minLength) throws IOException {
         //Build a suffix dictionary
         Map<List<BytePlus>, List<BytePlus>> dict = buildNgramByteSuffixDictionary(filename, n);
@@ -70,6 +78,13 @@ public class Markov {
         return toReturn;
     }
 
+    /**
+     * Builds a suffix dictionary of the bytes of a given file.
+     * @param filename The path to the file to be read from.
+     * @param n The "depth" of the dictionary
+     * @return A dictionary where the key is a list representing a series of bytes and the value is a list of possible next bytes.
+     * @throws IOException if filename cannot be found.
+     */
     public static Map<List<BytePlus>, List<BytePlus>> buildNgramByteSuffixDictionary(String filename, int n) throws IOException{
         //Read the bytes of the named file.
         byte[] data = Files.readAllBytes(Paths.get(filename));
@@ -91,32 +106,49 @@ public class Markov {
             bytes.add(NON_BYTE);
         }
         
-        //Construct the ditionary where each key is a list of bytes, in order, and each value is a list of
-        //possible bytes that could come after it, with certain bytes being entered multiple times to 
-        //reflect that they more often come after in the file.
+        /* Construct the dictionary where each key is a list of bytes, in order, and each value is a list of
+        possible bytes that could come after it, with certain bytes being entered multiple times to
+        reflect that they more often come after in the file. */
         Map<List<BytePlus>, List<BytePlus>> toReturn = new HashMap<>();
         
         //Loop through the array of bytes, starting at the first non-NON_BYTE byte.
         for (long i = n; i < bytes.size(); i++){
+            //Make a List that will be used as a key, represents a sequence of bytes.
             List<BytePlus> key = new ArrayList<>(n);
+
+            //Starting from position i - n, add all the values up to i - 1 to the key list.
             for (long j = n; j > 0; j--)
                 key.add(bytes.get((int) (i-j)));
 
+            //Add the value at i to the dictionary, paired to the key.
             appendToKey(toReturn, key, bytes.get((int) i));
+
+            //Print out a progress report every million bytes.
             if (i%1000000 == 0)
                 System.out.println("Byte "+i+" added to dictionary!");
         }
+
+        //Return the output and notify the user that the dictionary was built.
         System.out.println("Byte dictionary built!");
         return toReturn;
     }
 
+    /**
+     * Adds a key-value pair to a map of a values to lists of keys.
+     * @param m The map to be edited.
+     * @param key The key of the pair to be added.
+     * @param value The value of the pair to be added.
+     * @param <K> The key's class.
+     * @param <V> The value's class.
+     */
     public static <K, V>  void appendToKey(Map<K, List<V>> m, K key, V value){
         List<V> modifiedValue;
+        //Add the value to the list of other value for that key if it exists.
         if (m.containsKey(key)) {
             modifiedValue = m.get(key);
             modifiedValue.add(value);
             m.replace(key, modifiedValue);
-        } else{
+        } else{ //Otherwise, make a new key-value pair with the specified key and value.
             modifiedValue = new ArrayList<>();
             modifiedValue.add(value);
             m.put(key, modifiedValue);

@@ -19,9 +19,9 @@ public class Markov {
     private static final String FILENAME = "Judy 1.5 minute.raw";
 
     public static void main(String[] args) throws IOException {
-        final int n = 50;
+        int n = 50;
         byte[] babbledAudio = babbleNMinLengthByte(FILENAME, n, 100000);
-        Files.write(Paths.get("out.raw"), babbledAudio);
+        Files.write(Paths.get(String.format("%n02d.raw", n)), babbledAudio);
     }
 
     /**
@@ -93,6 +93,9 @@ public class Markov {
         List<BytePlus> bytes = new ArrayList<>();
         for (byte b: data)
             bytes.add(new BytePlus(b));
+        
+        //Clear the byte array to save memory space.
+        data = null;
         
         //Add the EOF character to the end.
         bytes.add(END_BYTE);
